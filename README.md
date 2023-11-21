@@ -1,6 +1,6 @@
 <div align="center">
     <img src="./docs/logo-removebg.png" width="200px">
-    <h1>IoT Contact Sensor Alarm System</h1>
+    <h1>RoomRaider - IoT Contact Sensor Alarm System</h1>
 </div>
 
 RoomRaider is a project that I completed for the UT Austin MSITM Emerging Technologies IoT class. This system uses an [M5StickCPlus](https://shop.m5stack.com/products/m5stickc-plus-esp32-pico-mini-iot-development-kit) with a contact sensor, the [Telegram Bot API](https://core.telegram.org/bots/api), [MongoDB](https://www.mongodb.com/), and an [aiohttp webhook](https://docs.aiohttp.org/en/stable/web_quickstart.html#run-a-simple-web-server) to act as an alarm system that allows the user to create a network of multiple contact sensor devices that send updates and push alerts to users when the system is armed.
