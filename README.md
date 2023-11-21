@@ -9,9 +9,7 @@ RoomRaider is a project that I completed for the UT Austin MSITM Emerging Techno
     <summary><b>Table of Contents</b></summary>
     <ol>
         <li><a href="#about">About</a></li>
-        <li><a href="#getting-started">Getting Started</a></li>
+        <li><a href="#setup">Setup</a></li>
         <li><a href="#usage">Usage</a></li>
-        <li><a href="#built-with">Built With</a></li>
-        <li><a href="#authors">Authors</a></li>
     </ol> 
 </details>
