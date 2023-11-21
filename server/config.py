@@ -1,0 +1,2 @@
+MONGODB_DATABASE = "et-final-project"
+MONGODB_EVENTS_COLLECTION = "events"

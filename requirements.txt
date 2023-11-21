@@ -1,0 +1,7 @@
+PyTelegramBotAPI
+pymongo
+python-dotenv
+tg_logger
+flask
+gunicorn
+pytz

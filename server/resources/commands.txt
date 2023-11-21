@@ -1,0 +1,4 @@
+help - See available commands
+status - Get current alarm system status
+arm - Activate the alarm system
+disarm - Deactivate the alarm system
