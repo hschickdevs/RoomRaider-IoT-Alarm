@@ -7,7 +7,7 @@
 const char* SSID = "<YOUR_WIFI_SSID>"; 
 const char* PASSWORD = "<YOUR_WIFI_PASSKEY>";
 const char* WEBHOOK_URL = "https://<VPS_IP>:<VPS_PORT>/<TELEGRAM_BOT_TOKEN>/";
-const char* LOCATION_NAME = "Bedroom Door"
+const char* LOCATION_NAME = "Bedroom Door";
 const int POLLING_PERIOD = 1000; // Polling period in milliseconds between sensor updates 1000 = 1 second
 
 // Function to setup the device on the wireless network

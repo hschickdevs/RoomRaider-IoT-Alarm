@@ -14,7 +14,7 @@ AlarmBot.webhook_url = None  # Set the webhook URL here once the service is star
 
 # Status trackers
 AlarmBot.system_status = "Disarmed" # Set initial status to disarmed
-AlarmBot.last_sensor_status = None  # There is no initial sensor status, set once updates are received
+AlarmBot.sensor_status_cache = {}  # There is no initial sensor status, set once updates are received
 
 # Instantiate MongoDB connection
 Mongo = EventsMongoDB()
@@ -55,7 +55,8 @@ async def on_disarm(message):
 
 # Send alerts when the system is triggered
 async def handle_event(data: dict) -> None:
-    if data['sensor_status'] == AlarmBot.last_sensor_status:
+    last_sensor_status = AlarmBot.sensor_status_cache.get(data['location'], None)
+    if data['sensor_status'] == last_sensor_status:
         # if the sensor status has not changed, do nothing
         return 
     
@@ -82,4 +83,4 @@ async def handle_event(data: dict) -> None:
             await AlarmBot.send_message(user, text=alert, parse_mode="Markdown")
             
     # set the last sensor status to the current one
-    AlarmBot.last_sensor_status = data['sensor_status']
+    AlarmBot.sensor_status_cache[data['location']] = data['sensor_status']

@@ -58,7 +58,7 @@ async def on_sensor_event(data: dict):
     logger.info(f"M5Stick Sensor event received: {data}")
     
     # Temporary override since getting datetime on M5Stick is much more complicated
-    data["timestamp"] = time()
+    data["timestamp"] = int(time())
     
     try:
         await handle_event(data)
