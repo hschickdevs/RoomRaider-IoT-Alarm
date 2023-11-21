@@ -6,6 +6,7 @@ import sys
 import json
 from telebot import types
 import logging
+from time import time
 
 from .util import handle_env, get_commands, get_ssl_filepaths
 
@@ -55,6 +56,9 @@ async def on_sensor_event(data: dict):
     }
     """
     logger.info(f"M5Stick Sensor event received: {data}")
+    
+    # Temporary override since getting datetime on M5Stick is much more complicated
+    data["timestamp"] = time()
     
     try:
         await handle_event(data)

@@ -1,6 +1,7 @@
 🚨 *RoomRaider Alert* 🚨
 
-A contact sensor has detected that the switch is now *{status}*.
+The _{location}_ sensor is now *{status}*.
 
 🕒 *Date and Time:* {datetime}
 📍 *Location:* {location}
+🌐 *Sensor Status:* {status}
