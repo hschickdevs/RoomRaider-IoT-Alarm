@@ -12,9 +12,14 @@ AlarmBot = AsyncTeleBot(getenv("TG_BOT_TOKEN"))
 AlarmBot.users = getenv("TG_USERS").split(",")
 AlarmBot.webhook_url = None  # Set the webhook URL here once the service is started
 
+
 # Status trackers
 AlarmBot.system_status = "Disarmed" # Set initial status to disarmed
-AlarmBot.sensor_status_cache = {}  # There is no initial sensor status, set once updates are received
+
+# There is no initial sensor status, set once updates are received:
+# Should be formatted as: {location: {"last_sensor_status": "OPEN" or "CLOSED", "last_message": int}}
+AlarmBot.sensor_status_cache = {}
+
 
 # Instantiate MongoDB connection
 Mongo = EventsMongoDB()
@@ -55,8 +60,16 @@ async def on_disarm(message):
 
 # Send alerts when the system is triggered
 async def handle_event(data: dict) -> None:
-    last_sensor_status = AlarmBot.sensor_status_cache.get(data['location'], None)
-    if data['sensor_status'] == last_sensor_status:
+    sensor_cache = AlarmBot.sensor_status_cache.get(data['location'], None)
+    if not sensor_cache:
+        # if the sensor is not in the cache, add it
+        AlarmBot.sensor_status_cache[data['location']] = {"last_sensor_status": data['sensor_status'],
+                                                          "last_message": data['timestamp']}
+        # Alert that the new device has been connected
+        device_connected(data['location'])
+        return
+    
+    if data['sensor_status'] == sensor_cache['last_sensor_status']:
         # if the sensor status has not changed, do nothing
         return 
     
@@ -83,4 +96,17 @@ async def handle_event(data: dict) -> None:
             await AlarmBot.send_message(user, text=alert, parse_mode="Markdown")
             
     # set the last sensor status to the current one
-    AlarmBot.sensor_status_cache[data['location']] = data['sensor_status']
+    AlarmBot.sensor_status_cache[data['location']]['last_sensor_status'] = data['sensor_status']
+    print("CURRENT CACHE: ", AlarmBot.sensor_status_cache)
+    
+
+async def device_connected(device_id: str):
+    """Send a message to all users when the device connects"""
+    for user in AlarmBot.users:
+        await AlarmBot.send_message(user, text=f"📶 *Device Connected:* {device_id}", parse_mode="Markdown")
+
+
+async def device_disconnected(device_id: str):
+    """Send a message to all users when the device disconnects"""
+    for user in AlarmBot.users:
+        await AlarmBot.send_message(user, text=f"🚫 *Device Disconnected:* {device_id}", parse_mode="Markdown")
