@@ -182,7 +182,7 @@ To setup this server, I first deployed a Linux Ubuntu VPS in the cloud:
 5. **Clone the repository**
 
     ```
-    git clone https://github.com/hschickdevs/RoomRaider-M5Stick-Alarm.git
+    git clone https://github.com/hschickdevs/RoomRaider-IoT-Alarm.git
 
     cd RoomRaider-M5Stick-Alarm/
     ```
