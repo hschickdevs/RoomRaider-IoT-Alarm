@@ -40,8 +40,8 @@ async def on_help(message):
 async def on_status(message):
     """Get the current status of the system, armed or disarmed"""
     devices_str = ""
-    for location in AlarmBot.sensor_status_cache.keys():
-        devices_str += f"📶 _{location}_"
+    for location, data in AlarmBot.sensor_status_cache.items():
+        devices_str += f"📶 _{location}_ (Status: `{data['last_sensor_status']}`)\n"
     if not devices_str:
         devices_str = "🚫 _None Connected_"
         
