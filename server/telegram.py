@@ -39,8 +39,18 @@ async def on_help(message):
 @AlarmBot.message_handler(commands=['status'])
 async def on_status(message):
     """Get the current status of the system, armed or disarmed"""
+    devices_str = ""
+    for location in AlarmBot.sensor_status_cache.keys():
+        devices_str += f"📶 _{location}_"
+    if not devices_str:
+        devices_str = "🚫 _None Connected_"
+        
     emoji = "🛑🔒" if AlarmBot.system_status == "Armed" else "🟢🔓"
-    await AlarmBot.reply_to(message, f"*Current System Status:*\n\n{emoji} {AlarmBot.system_status}", parse_mode="Markdown")
+    
+    await AlarmBot.reply_to(message, load_command_template("status").format(emoji=emoji, 
+                                                                            status=AlarmBot.system_status, 
+                                                                            devices=devices_str), 
+                            parse_mode="Markdown")
     
 # Handle /arm command
 @AlarmBot.message_handler(commands=['arm'])
@@ -66,8 +76,11 @@ async def handle_event(data: dict) -> None:
         AlarmBot.sensor_status_cache[data['location']] = {"last_sensor_status": data['sensor_status'],
                                                           "last_message": data['timestamp']}
         # Alert that the new device has been connected
-        device_connected(data['location'])
+        await device_connected(data['location'])
         return
+    
+    # Set last message for event regardless
+    AlarmBot.sensor_status_cache[data['location']]['last_message'] = data['timestamp']
     
     if data['sensor_status'] == sensor_cache['last_sensor_status']:
         # if the sensor status has not changed, do nothing
@@ -97,7 +110,6 @@ async def handle_event(data: dict) -> None:
             
     # set the last sensor status to the current one
     AlarmBot.sensor_status_cache[data['location']]['last_sensor_status'] = data['sensor_status']
-    print("CURRENT CACHE: ", AlarmBot.sensor_status_cache)
     
 
 async def device_connected(device_id: str):

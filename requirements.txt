@@ -5,3 +5,4 @@ tg_logger
 flask
 gunicorn
 pytz
+requests

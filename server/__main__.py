@@ -6,7 +6,11 @@ import sys
 import json
 from telebot import types
 import logging
-from time import time
+from time import time, sleep
+import threading
+import requests
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from .util import handle_env, get_commands, get_ssl_filepaths
 
@@ -14,7 +18,8 @@ handle_env()
 
 # Import logger and AlarmBot after environment vars have been prepared
 from .logger import logger
-from .telegram import AlarmBot, handle_event
+from .config import SENSOR_DISCONNECT_TIME
+from .telegram import AlarmBot, handle_event, device_disconnected
     
 async def set_bot_commands():
     """Set the latest user and admin commands on the bot"""
@@ -30,17 +35,52 @@ async def set_bot_commands():
 async def log_start(run_type: str):
     bot_info = await AlarmBot.get_me()
     logger.warn(f"{bot_info.username} {run_type} started with token {AlarmBot.token}")
-                
+    
+
+def start_sensor_check():
+    """Monitor sensor connections using the 'ping' route"""
+    
+    # Delay for the server to start
+    sleep(5)
+    
+    while True:
+        try:
+            # Send a POST request to the webhook URL
+            response = requests.post(AlarmBot.webhook_url, json={"action": "ping"}, verify=False)
+            if response.status_code != 200:
+                logger.error(f"Ping failed during sensor connection check with status code {response.status_code}")
+
+        except requests.RequestException as e:
+            logger.error(f"Ping failed during sensor connection check: {e}", exc_info=e)
+
+        sleep(10)  # Wait for 10 seconds (or your desired interval) before the next ping
+        
                 
 # ------------------ WEBHOOK (production environment) ------------------ #
 
 async def on_ping(data: dict):
     """
     Handles Ping events
+    Checks the system for disconnected sensors
     
     {"action": "ping"}
     """
     logger.info(f"Ping received: {data}")
+    
+    # Check the system for disconnections
+    current_time = int(time())
+    disconnected_sensors = []
+    for location, status in AlarmBot.sensor_status_cache.items():
+        last_message_time = status["last_message"]
+        if current_time - last_message_time > SENSOR_DISCONNECT_TIME:
+            await device_disconnected(location)
+            disconnected_sensors.append(location)
+            logger.info(f"Device has been disconnected: {location}")
+    
+    # Remove disconnected sensors from the cache
+    for sensor in disconnected_sensors:
+        del AlarmBot.sensor_status_cache[sensor]
+            
     return web.Response(text="Success: Ping received!", status=200)
 
 async def on_sensor_event(data: dict):
@@ -112,7 +152,8 @@ async def setup_webhook():
     webhook_url_base = "https://{}:{}".format(webhook_host, webhook_port)
     webhook_url_path = "/{}/".format(AlarmBot.token)
     webhook_url_full = webhook_url_base + webhook_url_path
-    
+    AlarmBot.webhook_url = webhook_url_full
+        
     # Get ssl certificate files
     ssl_cert, ssl_priv = get_ssl_filepaths()
     
@@ -122,7 +163,6 @@ async def setup_webhook():
         
         await AlarmBot.remove_webhook()
         await AlarmBot.set_webhook(url=webhook_url_full, certificate=open(ssl_cert, 'r'))
-        AlarmBot.webhook_url = webhook_url_full
     except Exception as e:
         logging.error(f"Failed to set up webhook: {e}")
         sys.exit(1)
@@ -131,11 +171,16 @@ async def setup_webhook():
     await log_start(run_type="webhook")
     
     # Return the values to be processed (web.run_app cannot be started inside of async function)
-    return app, webhook_listen, webhook_port, ssl_cert, ssl_priv 
+    return app, webhook_listen, webhook_port, ssl_cert, ssl_priv
 
 
 if __name__ == "__main__":
+    # Build app
     app, host, port, cert, priv = asyncio.run(setup_webhook())  # Get the app and other values
+
+    # Start the sensor check thread
+    sensor_check_thread = threading.Thread(target=start_sensor_check, daemon=True)
+    sensor_check_thread.start()
 
     # Build SSL context
     try:
