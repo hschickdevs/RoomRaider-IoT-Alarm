@@ -8,7 +8,7 @@ from bson import ObjectId
 from .config import MONGODB_DATABASE, MONGODB_EVENTS_COLLECTION
 
 @dataclass
-class M5StickEvent:
+class IoTEvent:
     """Models the event from the M5 stick"""
     action: str  # Generic key to specify the action sent to the webhook
     timestamp: int
@@ -42,7 +42,7 @@ class EventsMongoDB(MongoClient):
     
     # ------------------ USER METHODS ------------------ #
     
-    def get_all_events(self, start: int = None, end: int = None) -> list[M5StickEvent]:
+    def get_all_events(self, start: int = None, end: int = None) -> list[IoTEvent]:
         """
         Fetches all events from the database.
         
@@ -61,10 +61,10 @@ class EventsMongoDB(MongoClient):
                 timestamp_query["$lte"] = end
             query["timestamp"] = timestamp_query
             
-        return [M5StickEvent(**event) for event in self.events.find(query)]
+        return [IoTEvent(**event) for event in self.events.find(query)]
 
     
-    def add_event(self, event: M5StickEvent) -> M5StickEvent:
+    def add_event(self, event: IoTEvent) -> IoTEvent:
         """Adds a user to the MongoDB database only if a user with the same ID doesn't already exist.
 
         Args:
@@ -77,7 +77,7 @@ class EventsMongoDB(MongoClient):
         self.events.insert_one(event_dict)
         
         # Find the event that was just added and load it with the ID
-        return M5StickEvent(**self.events.find_one(event_dict))
+        return IoTEvent(**self.events.find_one(event_dict))
 
     # ------------------ CLASS METHODS ------------------ #
 

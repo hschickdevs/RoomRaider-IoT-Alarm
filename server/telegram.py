@@ -3,7 +3,7 @@ from telebot.async_telebot import AsyncTeleBot
 from datetime import datetime
 import pytz
 
-from .mongo import EventsMongoDB, M5StickEvent
+from .mongo import EventsMongoDB, IoTEvent
 from .util import load_command_template
 
 # Load bot token from env and create async bot instance
@@ -88,7 +88,7 @@ async def handle_event(data: dict) -> None:
     
     # append the system status to the request data
     data["system_status"] = AlarmBot.system_status
-    event = M5StickEvent(**data)
+    event = IoTEvent(**data)
     
     # add event to mongoDB
     Mongo.add_event(event)

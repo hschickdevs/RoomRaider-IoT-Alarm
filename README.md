@@ -32,8 +32,6 @@ This system can be used to monitor any physical connections that can be monitore
 
 ## System Components
 
-In this section I will go over the primary components of the system and how they work together. The overall architecture of the system is summarized below.
-
 ![Alt text](./docs/system.png)
 
 ### Python Webhook
@@ -61,9 +59,11 @@ The [webhook](./server/) is a Python webserver that uses the [aiohttp](https://d
 
     * `ping` - Used to verify that the server is running. Can be monitored by a service like UptimeRobot with the payload `{"action": "ping"}`.
 
-3. **It is used to track the current state of the sensors.**
+3. **It is used to track the current state of the sensors & send alerts**
 
-    The webhook stores the local state of all registered sensors via their "location" parameter in the cache. This implies that the "location" parameter for each sensor must be unique. The webhook uses this cache to determine if a sensor has changed state and sends a message to the user via the Telegram Bot API if the system is armed.
+    The webhook stores the local state of all registered sensors via their "location" parameter in the cache. This implies that the "location" parameter for each sensor must be unique. 
+    
+    The webhook uses this cache to determine if a sensor has _changed state_ and sends a message to the user via the Telegram Bot API (only if the system is armed).
 
 ### Telegram Bot
 
@@ -72,9 +72,20 @@ The [webhook](./server/) is a Python webserver that uses the [aiohttp](https://d
 The [Telegram Bot](https://t.me/M5StickDoorBot) is the primary interface for the user to interact with the system, and aims to be an intuitive solution for the user as opposed to a website or physical buttons on the device. This bot sends updates to the previously mentioned webhook via Telegram's servers when the user sends commands. The bot has the following commands as shown in the image above:
 
 * `/help` - _Displays the help menu._
+
+    <img src="./docs/tg_help.png" width="320px">
+
 * `/status` - _Gets the current status of the system (armed or disarmed)._
+
+    <img src="./docs/tg_status.png" height="140px">
+
 * `/arm` - _Arms the system so that the user starts receiving alerts when the status of a sensor in the network changes._
+
+    <img src="./docs/tg_arm.png" width="320px">
+
 * `/disarm` - _Disarms the system so that the user no longer receives system alerts._
+
+    <img src="./docs/tg_disarm.png" width="320px">
 
 When alerts are received, the bot sends a message to the user with the following format:
 
@@ -263,5 +274,7 @@ Now that the script is running on the device and the sensor is connected, you sh
 This can be replicated for multiple sensors in the system.
 
 ## Demo
+
+The below gif features a demo of the system in action. The system is armed and one sensor (running on an M5StickCPlus device) is triggered via door opening and closing events:
 
 <img src="./docs/demo.gif" width="300px">
