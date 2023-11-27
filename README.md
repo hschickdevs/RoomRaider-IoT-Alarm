@@ -277,4 +277,4 @@ This can be replicated for multiple sensors in the system.
 
 The below gif features a demo of the system in action. The system is armed and one sensor (running on an M5StickCPlus device) is triggered via door opening and closing events:
 
-<img src="./docs/demo.gif" width="300px">
+<img alt="Gif loading..." src="./docs/demo.gif" width="300px">
